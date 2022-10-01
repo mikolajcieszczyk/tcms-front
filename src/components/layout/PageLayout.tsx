@@ -2,7 +2,7 @@ import React from 'react'
 import { Grid, Segment } from 'semantic-ui-react'
 import Nav from '../nav/Nav'
 
-import Logo from '../../img/logo.png'
+import logo from '../../assets/img/logo.png'
 
 export default function PageLayout(): React.ReactElement {
 	return (
@@ -10,7 +10,7 @@ export default function PageLayout(): React.ReactElement {
 			<Grid.Row>
 				<Grid.Column width={3}>
 					<Segment>
-						<img src={logo} />
+						<img src={logo} alt='a' />
 					</Segment>
 				</Grid.Column>
 				<Grid.Column width={13}>
