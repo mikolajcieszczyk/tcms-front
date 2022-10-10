@@ -1,79 +1,79 @@
 import React, { useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
+
 import TennisBall from '../../assets/img/tennis-ball.png'
-import styled from 'styled-components'
 
 import { Icon, Menu } from 'semantic-ui-react'
+import { NavContainer, LogoWrapper, MenuContainer, MenuItem } from './Nav.styled'
 
-export const NavContainer = styled.div`
-	width: 130px;
-	height: 800px;
-	background: #028360;
-	border-radius: 10px 0 0 10px;
-	padding: 20px;
-	text-align: center;
-	color: white;
-`
+interface INav {
+	path?: string
+}
 
-export const LogoWrapper = styled.div`
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	margin-bottom: 20px;
-`
-
-export const MenuContainer = styled.nav`
-	display: flex;
-	flex-direction: column;
-`
-
-export default function Nav() {
+export default function Nav({ path }: INav) {
 	const [activeItem, setActiveItem] = useState('')
+	const location = useLocation()
+
 	return (
 		<NavContainer>
 			<LogoWrapper>
-				<img src={TennisBall} alt='TennisBall' width='60px' />
+				<Link to='/dashboard'>
+					<img src={TennisBall} alt='TennisBall' width='60px' />
+				</Link>
 			</LogoWrapper>
 			<MenuContainer>
 				<Menu inverted icon='labeled' vertical>
-					<Menu.Item
-						name='Bookings'
-						active={activeItem === 'Bookings'}
-						onClick={() => setActiveItem('Bookings')}
-						className='menuItem'
-					>
-						<Icon name='calendar alternate outline' />
-						Bookings
-					</Menu.Item>
+					<Link to='bookings'>
+						<MenuItem
+							name='Bookings'
+							active={activeItem === 'Bookings'}
+							onClick={() => setActiveItem('Bookings')}
+							className='menuItem'
+							isActive={location.pathname === '/dashboard/bookings'}
+						>
+							<Icon name='calendar alternate outline' />
+							Bookings
+						</MenuItem>
+					</Link>
 
-					<Menu.Item
-						name='clients'
-						active={activeItem === 'clients'}
-						onClick={() => setActiveItem('clients')}
-						className='menuItem'
-					>
-						<Icon name='users' />
-						Clients
-					</Menu.Item>
+					<Link to='clients'>
+						<MenuItem
+							name='clients'
+							active={activeItem === 'clients'}
+							onClick={() => setActiveItem('clients')}
+							className='menuItem'
+							isActive={location.pathname === '/dashboard/clients'}
+						>
+							<Icon name='users' />
+							Clients
+						</MenuItem>
+					</Link>
 
-					<Menu.Item
-						name='Courts'
-						active={activeItem === 'Courts'}
-						onClick={() => setActiveItem('Courts')}
-						className='menuItem'
-					>
-						<Icon name='warehouse' />
-						Courts
-					</Menu.Item>
+					<Link to='courts'>
+						<MenuItem
+							name='Courts'
+							active={activeItem === 'Courts'}
+							onClick={() => setActiveItem('Courts')}
+							className='menuItem'
+							isActive={location.pathname === '/dashboard/courts'}
+						>
+							<Icon name='warehouse' />
+							Courts
+						</MenuItem>
+					</Link>
 
-					<Menu.Item
-						name='stats'
-						active={activeItem === 'stats'}
-						onClick={() => setActiveItem('stats')}
-						className='menuItem'
-					>
-						<Icon name='chart area' />
-						Stats
-					</Menu.Item>
+					<Link to='stats'>
+						<MenuItem
+							name='stats'
+							active={activeItem === 'stats'}
+							onClick={() => setActiveItem('stats')}
+							className='menuItem'
+							isActive={location.pathname === '/dashboard/stats'}
+						>
+							<Icon name='chart area' />
+							Stats
+						</MenuItem>
+					</Link>
 				</Menu>
 			</MenuContainer>
 		</NavContainer>
