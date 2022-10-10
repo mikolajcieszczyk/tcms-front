@@ -3,7 +3,6 @@ import Nav from '../nav/Nav'
 import { Dropdown, Icon } from 'semantic-ui-react'
 import { PageLayoutContainer, MainContainer, TCMSheader, LoggedAs } from './PageLayout.styled'
 import { Navigate, Outlet, useOutlet } from 'react-router-dom'
-import { useAuth } from '../AuthContext/AuthContext'
 interface IPageLayout {
 	path?: string
 }
@@ -15,14 +14,7 @@ export default function PageLayout({ path }: IPageLayout): React.ReactElement {
 		// todo
 	}
 
-	const { user } = useAuth()
 	const outlet = useOutlet()
-
-	console.log(user)
-
-	if (!user) {
-		return <Navigate to='/' />
-	}
 
 	return (
 		<PageLayoutContainer>

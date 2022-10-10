@@ -1,129 +1,84 @@
-import React, { useEffect, useState } from 'react'
-import axios from 'axios'
-import { Grid, Header, Segment, Button, Message, FormInput, Icon, Form } from 'semantic-ui-react'
-import Logo from '../../../assets/img/logo.png'
-import { Navigate, useNavigate } from 'react-router-dom'
-import { useAuth } from '../../AuthContext/AuthContext'
+import React, { useEffect, useState, useRef, useContext } from 'react'
+import useAuth from '../../../hooks/useAuth'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
+
+import axios from '../../../api/axios'
+const LOGIN_URL = 'users/login'
 
 export default function LoginPage() {
-	const [isSubmitted, setIsSubmitted] = useState(false)
-	const [isLoginError, setIsLoginError] = useState(false)
+	const { auth, setAuth } = useAuth()
+	const userRef: any = useRef()
+	const errRef: any = useRef()
+	const navigate = useNavigate()
+	const location = useLocation()
+	const from = location.state?.from?.pathname || '/dashboard'
 
-	const { user } = useAuth()
-	let navigate = useNavigate()
+	const [user, setUser] = useState('')
+	const [pwd, setPwd] = useState('')
+	const [errMsg, setErrMsg] = useState('')
 
-	if (!user) {
-		return <Navigate to='/dashboard/' replace />
-	}
-
-	const getToken = () => {
-		const tokenValue = localStorage.getItem('token')
-		const parsedToken = tokenValue && JSON.parse(tokenValue)
-
-		return parsedToken
-	}
-
-	const userToken = getToken()
+	console.log(auth)
 
 	useEffect(() => {
-		if (!userToken) {
-			console.log('nima tokenaaaaaaaaaaaaaaaaaaaa')
-		} else {
-			navigate('/dashboard')
-		}
-	})
+		userRef.current.focus()
+	}, [])
 
-	localStorage.removeItem('token')
+	useEffect(() => {
+		setErrMsg('')
+	}, [user, pwd])
 
-	const handleSubmit = async (e: any) => {
+	const handleSubmit = async (e: { preventDefault: () => void }) => {
 		e.preventDefault()
 
-		setIsLoginError(false)
+		try {
+			const response = await axios.post(
+				LOGIN_URL,
+				JSON.stringify({ username: user, password: pwd }),
+				{
+					headers: { 'Content-type': 'application/json' },
+					// withCredentials: true,
+				},
+			)
+			console.log(response.data)
 
-		const username = e.target[0].value
-		const password = e.target[1].value
-
-		const credentials = {
-			username,
-			password,
+			const token = response.data.token
+			setAuth({ user, pwd, token })
+			// setUser('')
+			// setPwd('')
+			navigate(from, { replace: true })
+		} catch (error) {
+			console.log(error)
+			errRef.current.focus()
 		}
-
-		axios
-			.post('http://localhost:4000/users/login', credentials)
-			.then((res) => {
-				if (res.status === 201) {
-					setIsSubmitted(true)
-					// todo change for cookies
-					localStorage.setItem('token', JSON.stringify(res.data.token))
-					setTimeout(() => navigate('/dashboard'), 2000)
-				}
-			})
-			.catch((error) => {
-				console.log(error)
-				setIsLoginError(true)
-			})
 	}
 
-	// console.log(isSubmitted)
-	console.log(localStorage)
-
 	return (
-		<div className='form'>
-			<Grid textAlign='center' style={{ height: '100vh' }} verticalAlign='middle'>
-				<Grid.Column style={{ maxWidth: 450 }}>
-					<Header as='h2' color='teal' textAlign='center'>
-						<img src={Logo} style={{ width: '300px' }} /> <br></br>
-						Log-in to your account
-					</Header>
-					<Form onSubmit={handleSubmit}>
-						<Segment stacked>
-							<FormInput fluid icon='user' iconPosition='left' placeholder='Username' required />
-							<FormInput
-								fluid
-								icon='lock'
-								iconPosition='left'
-								placeholder='Password'
-								type='password'
-								required
-							/>
-
-							<Button color='teal' fluid size='large'>
-								Login
-							</Button>
-						</Segment>
-					</Form>
-					<Message color='red' hidden={!isLoginError}>
-						<div
-							style={{
-								display: 'flex',
-								justifyContent: 'space-evenly',
-								alignItems: 'center',
-							}}
-						>
-							<Icon size='big' name='info circle' />
-							<div>
-								<Message.Header>We're sorry but something went wrong</Message.Header>
-								<p>Try one more time</p>
-							</div>
-						</div>
-					</Message>
-					<Message color='green' hidden={!isSubmitted} className='login-success-message'>
-						<div
-							style={{
-								display: 'flex',
-								justifyContent: 'space-evenly',
-								alignItems: 'center',
-							}}
-						>
-							<Icon size='big' loading name='thumbs up' />
-							<div>
-								<Message.Header>Logged succesfully!</Message.Header>
-								<p>Redirecting...</p>
-							</div>
-						</div>
-					</Message>
-				</Grid.Column>
-			</Grid>
+		<div>
+			{/* <p ref={errRef} aria-live='assertive'>
+				{errMsg}
+			</p> */}
+			<h1>Sign In</h1>
+			<form onSubmit={handleSubmit}>
+				<label htmlFor='username'>Username:</label>
+				<input
+					type='text'
+					id='username'
+					ref={userRef}
+					autoComplete='off'
+					onChange={(e) => setUser(e.target.value)}
+					value={user}
+					required
+				/>
+				<label htmlFor='password'>Password:</label>
+				<input
+					type='password'
+					id='password'
+					onChange={(e) => setPwd(e.target.value)}
+					value={pwd}
+					required
+				/>
+				<button>Sign in</button>
+			</form>
 		</div>
 	)
 }
