@@ -14,7 +14,7 @@ export const MenuHeader = styled(Menu.Header)`
 `
 export const NavContainer = styled.div`
 	width: 130px;
-	height: 800px;
+	height: 100%;
 	background: #5db7ad;
 	border-radius: 10px 0 0 10px;
 	padding: 20px;

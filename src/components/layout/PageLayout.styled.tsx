@@ -1,13 +1,12 @@
 import styled from 'styled-components'
 import { Grid } from 'semantic-ui-react'
 
-export const PageLayoutLeftColumn = styled(Grid.Column)`
-	background-color: #4949c8;
-`
-
 export const PageLayoutContainer = styled.div`
 	display: grid;
 	grid-template-columns: 130px auto;
+	padding: 20px;
+	background-color: #ecebfe;
+	height: 100%;
 `
 
 export const MainContainer = styled.div`
@@ -17,6 +16,9 @@ export const MainContainer = styled.div`
 	border-radius: 0 10px 10px 0;
 
 	padding: 20px;
+`
+export const PageLayoutLeftColumn = styled(Grid.Column)`
+	background-color: #4949c8;
 `
 
 export const TCMSheader = styled.h1`

@@ -6,6 +6,8 @@ import TennisBall from '../../assets/img/tennis-ball.png'
 import { Icon, Menu } from 'semantic-ui-react'
 import { NavContainer, LogoWrapper, MenuContainer, MenuItem } from './Nav.styled'
 
+import useAuth from '../../hooks/useAuth'
+
 interface INav {
 	path?: string
 }
@@ -13,6 +15,7 @@ interface INav {
 export default function Nav({ path }: INav) {
 	const [activeItem, setActiveItem] = useState('')
 	const location = useLocation()
+	const { auth, setAuth } = useAuth()
 
 	return (
 		<NavContainer>

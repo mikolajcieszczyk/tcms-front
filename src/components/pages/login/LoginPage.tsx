@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useRef, useContext } from 'react'
 import useAuth from '../../../hooks/useAuth'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-
+import Logo from '../../../assets/img/logo.png'
 import axios from '../../../api/axios'
+import { Button, Form, Grid, Header, Segment } from 'semantic-ui-react'
 const LOGIN_URL = 'users/login'
 
 export default function LoginPage() {
@@ -17,10 +18,10 @@ export default function LoginPage() {
 	const [pwd, setPwd] = useState('')
 	const [errMsg, setErrMsg] = useState('')
 
-	console.log(auth)
+	// console.log(auth)
 
 	useEffect(() => {
-		userRef.current.focus()
+		// userRef.current.focus()
 	}, [])
 
 	useEffect(() => {
@@ -39,7 +40,7 @@ export default function LoginPage() {
 					// withCredentials: true,
 				},
 			)
-			console.log(response.data)
+			// console.log(response.data)
 
 			const token = response.data.token
 			setAuth({ user, pwd, token })
@@ -48,37 +49,50 @@ export default function LoginPage() {
 			navigate(from, { replace: true })
 		} catch (error) {
 			console.log(error)
-			errRef.current.focus()
+			// errRef.current.focus()
 		}
 	}
 
 	return (
-		<div>
+		<Grid textAlign='center' style={{ height: '100vh' }} verticalAlign='middle'>
 			{/* <p ref={errRef} aria-live='assertive'>
 				{errMsg}
 			</p> */}
-			<h1>Sign In</h1>
-			<form onSubmit={handleSubmit}>
-				<label htmlFor='username'>Username:</label>
-				<input
-					type='text'
-					id='username'
-					ref={userRef}
-					autoComplete='off'
-					onChange={(e) => setUser(e.target.value)}
-					value={user}
-					required
-				/>
-				<label htmlFor='password'>Password:</label>
-				<input
-					type='password'
-					id='password'
-					onChange={(e) => setPwd(e.target.value)}
-					value={pwd}
-					required
-				/>
-				<button>Sign in</button>
-			</form>
-		</div>
+			<Grid.Column style={{ maxWidth: 450 }}>
+				<Header as='h2' color='teal' textAlign='center'>
+					<img src={Logo} style={{ width: '300px' }} /> <br></br>
+					Log-in to your account
+				</Header>
+				<Form size='large' onSubmit={handleSubmit}>
+					<Segment>
+						<Form.Input
+							fluid
+							icon='user'
+							placeholder='Username'
+							id='username'
+							ref={userRef}
+							autoComplete='off'
+							onChange={(e) => setUser(e.target.value)}
+							value={user}
+							required
+						/>
+
+						<Form.Input
+							fluid
+							icon='lock'
+							placeholder='Password'
+							type='password'
+							id='password'
+							onChange={(e) => setPwd(e.target.value)}
+							value={pwd}
+							required
+						/>
+						<Button color='teal' fluid size='large'>
+							Login
+						</Button>
+					</Segment>
+				</Form>
+			</Grid.Column>
+		</Grid>
 	)
 }

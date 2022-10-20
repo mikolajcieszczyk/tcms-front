@@ -2,19 +2,30 @@ import React from 'react'
 import Nav from '../nav/Nav'
 import { Dropdown, Icon } from 'semantic-ui-react'
 import { PageLayoutContainer, MainContainer, TCMSheader, LoggedAs } from './PageLayout.styled'
-import { Navigate, Outlet, useOutlet } from 'react-router-dom'
+import { useOutlet, useNavigate, useLocation } from 'react-router-dom'
+
+import useAuth from '../../hooks/useAuth'
+
 interface IPageLayout {
 	path?: string
 }
 
 export default function PageLayout({ path }: IPageLayout): React.ReactElement {
+	const navigate = useNavigate()
+	const { auth, setAuth } = useAuth()
+	// console.log(auth)
+	const outlet = useOutlet()
+	const location = useLocation()
+
+	const from = location.state?.from?.pathname || '/login'
+
 	const handleLogOut = () => {
 		// localStorage.removeItem('token')
 		// navigate('/login')
 		// todo
+		setAuth({})
+		navigate(from, { replace: true })
 	}
-
-	const outlet = useOutlet()
 
 	return (
 		<PageLayoutContainer>
@@ -30,7 +41,7 @@ export default function PageLayout({ path }: IPageLayout): React.ReactElement {
 					<TCMSheader>TENNIS CLUB MANAGEMENT SYSTEM</TCMSheader>
 					<LoggedAs>
 						<Icon size='big' name='user circle' />
-						<Dropdown floating text='miki'>
+						<Dropdown floating text={auth.user}>
 							<Dropdown.Menu>
 								<Dropdown.Item text='Log out' onClick={handleLogOut} />
 							</Dropdown.Menu>
