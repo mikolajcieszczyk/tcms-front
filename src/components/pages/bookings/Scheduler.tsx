@@ -177,8 +177,8 @@ export default function Scheduler() {
   }
 
   return (
-    <Fragment>
-      <div className='height600'>
+    <>
+      <div>
         <Calendar
           formats={formats}
           culture='Poland'
@@ -199,7 +199,7 @@ export default function Scheduler() {
           selectable
         />
       </div>
-    </Fragment>
+    </>
   )
 }
 Scheduler.propTypes = {

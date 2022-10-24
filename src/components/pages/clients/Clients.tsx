@@ -48,9 +48,7 @@ export default function Clients() {
   }, [view, clientsList])
 
   return (
-    <Grid textAlign='center'>
-      <h1>Clients</h1>
-
+    <Grid textAlign='center' padded>
       <Grid.Row>
         <Grid.Column>
           <Button.Group>
@@ -66,10 +64,7 @@ export default function Clients() {
 
       {view === 'clientsList' && (
         <>
-          <Header as='h2' color='teal' textAlign='center'>
-            Clients List
-          </Header>
-          <Table celled>
+          <Table striped celled selectable>
             <Table.Header>
               <Table.Row>
                 <Table.HeaderCell>Name</Table.HeaderCell>
@@ -97,7 +92,9 @@ export default function Clients() {
                       <Table.Cell>{item.email}</Table.Cell>
                       <Table.Cell>{item.skills}</Table.Cell>
                       <Table.Cell>
-                        <div style={{ display: 'flex', justifyContent: 'center' }}>
+                        <div
+                          style={{ display: 'flex', justifyContent: 'center' }}
+                        >
                           <EditClient id={item.id} />
                         </div>
                       </Table.Cell>

@@ -1,20 +1,43 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 @import 'react-big-calendar/lib/css/react-big-calendar.css';
-
+@import '~normalize.css';
+@import '~@blueprintjs/core/lib/css/blueprint.css';
+@import '~@blueprintjs/icons/lib/css/blueprint-icons.css';
 html,
 body {
-	font-family: 'Roboto', sans-serif;
-	font-size: 14px !important;
-	background-color: #ecebfe !important;
+  font-family: 'Poppins', sans-serif !important;
+  font-size: 14px !important;
+  padding: 20px;
+  background-color: #d0dfff;
+  border-radius: 0.28571429rem;
+  height: auto !important;
+  color: #2c2745 !important;
 }
 
-/* .App {
-	padding: 30px;
-	min-width: 100%;
-	min-height: 100vh;
-	background-color: blue;
-} */
-
 .menuItem {
-	background: #5db7ad !important;
+  background: #fff !important;
+  border: 0 !important;
+}
+
+.ui .grid > table {
+  padding: 0 !important;
+}
+
+th,
+td {
+  /* color: #3c3f88 !important; */
+  /* font-family: 'Poppins', sans-serif !important; */
+  color: #2c2745 !important;
+}
+
+button {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+a {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+.celled {
+  /* background-color: red !important; */
 }

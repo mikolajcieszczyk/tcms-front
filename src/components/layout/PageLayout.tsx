@@ -1,55 +1,139 @@
 import React from 'react'
 import Nav from '../nav/Nav'
-import { Dropdown, Icon } from 'semantic-ui-react'
-import { PageLayoutContainer, MainContainer, TCMSheader, LoggedAs } from './PageLayout.styled'
-import { useOutlet, useNavigate, useLocation } from 'react-router-dom'
-
+import {
+  // Button,
+  Container,
+  Dropdown,
+  Grid,
+  Header,
+  // Icon,
+} from 'semantic-ui-react'
+import {
+  PageLayoutContainer,
+  MainContainer,
+  TCMSheader,
+  LoggedAs,
+  LogoWrapper,
+  LogOutWrapper,
+} from './PageLayout.styled'
+import { useOutlet, useNavigate, useLocation, Link } from 'react-router-dom'
+import TennisBall from '../../assets/img/green-ball.png'
 import useAuth from '../../hooks/useAuth'
-
+import AvatarPlaceholder from '../../assets/img/avatar.png'
+import { Button, Spinner, Icon } from '@blueprintjs/core'
 interface IPageLayout {
-	path?: string
+  path?: string
 }
 
 export default function PageLayout({ path }: IPageLayout): React.ReactElement {
-	const navigate = useNavigate()
-	const { auth, setAuth } = useAuth()
-	// console.log(auth)
-	const outlet = useOutlet()
-	const location = useLocation()
+  const navigate = useNavigate()
+  const { auth, setAuth } = useAuth()
+  // console.log(auth)
+  const outlet = useOutlet()
+  const location = useLocation()
 
-	const from = location.state?.from?.pathname || '/login'
+  const from = location.state?.from?.pathname || '/login'
 
-	const handleLogOut = () => {
-		// localStorage.removeItem('token')
-		// navigate('/login')
-		// todo
-		setAuth({})
-		navigate(from, { replace: true })
-	}
+  const handleLogOut = () => {
+    // localStorage.removeItem('token')
+    // navigate('/login')
+    // todo
+    setAuth({})
+    navigate(from, { replace: true })
+  }
 
-	return (
-		<PageLayoutContainer>
-			<Nav path={path} />
-			<MainContainer>
-				<div
-					style={{
-						display: 'flex',
-						justifyContent: 'space-between',
-						alignContent: 'center',
-					}}
-				>
-					<TCMSheader>TENNIS CLUB MANAGEMENT SYSTEM</TCMSheader>
-					<LoggedAs>
-						<Icon size='big' name='user circle' />
-						<Dropdown floating text={auth.user}>
-							<Dropdown.Menu>
-								<Dropdown.Item text='Log out' onClick={handleLogOut} />
-							</Dropdown.Menu>
-						</Dropdown>
-					</LoggedAs>
-				</div>
-				<div style={{ padding: '20px 0' }}>{outlet}</div>
-			</MainContainer>
-		</PageLayoutContainer>
-	)
+  return (
+    <Container fluid>
+      <Grid padded>
+        <Grid.Row>
+          <Grid.Column width={3} textAlign='left'>
+            <LogoWrapper to='/dashboard'>
+              <div>
+                <img src={TennisBall} alt='TennisBall' />
+                <span>TCMS</span>
+              </div>
+              <p style={{ color: '#2C2745' }}>
+                <span>TENNIS CLUB</span> <br /> <span>MANAGEMENT SYSTEM</span>
+              </p>
+            </LogoWrapper>
+          </Grid.Column>
+          <Grid.Column width={5} textAlign='left'>
+            <>
+              <Nav />
+              <Button>
+                elo <Icon icon='cross' />
+              </Button>
+            </>
+          </Grid.Column>
+          <Grid.Column width={8} textAlign='right'>
+            <LogOutWrapper>
+              <Dropdown
+                direction='left'
+                lazyLoad
+                icon={''}
+                trigger={
+                  <p style={{ display: 'flex', alignItems: 'center' }}>
+                    <img
+                      src={AvatarPlaceholder}
+                      alt='AvatarPlaceholder'
+                      width='30px'
+                      style={{
+                        borderRadius: '.28571429rem',
+                      }}
+                    />
+                  </p>
+                }
+              >
+                <Dropdown.Menu>
+                  <Dropdown.Header
+                    icon='user'
+                    content={<span>{auth.user}</span>}
+                  />
+                  <Dropdown.Item text='Log out' onClick={handleLogOut} />
+                </Dropdown.Menu>
+              </Dropdown>
+            </LogOutWrapper>
+          </Grid.Column>
+        </Grid.Row>
+
+        <Grid.Row>
+          <Grid.Column width={16} textAlign='center'>
+            <Grid.Row>
+              <Header as={'h2'}>
+                {location.pathname === '/dashboard' && (
+                  <span style={{ color: '#3C3F88' }}>Home</span>
+                )}
+                {location.pathname === '/dashboard/bookings' && (
+                  <span style={{ color: '#3C3F88' }}>Bookings</span>
+                )}
+                {location.pathname === '/dashboard/clients' && (
+                  <span style={{ color: '#3C3F88' }}>Clients</span>
+                )}
+              </Header>
+            </Grid.Row>
+            <Grid.Row>{outlet}</Grid.Row>
+          </Grid.Column>
+        </Grid.Row>
+
+        <Grid.Row>
+          <Grid.Column width={16} textAlign='center'>
+            <span
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+              }}
+            >
+              <a
+                href='https://github.com/mikolajcieszczyk'
+                target='_blank'
+                rel='noopener noreferrer'
+              >
+                {/* <Icon name='github square' /> github.com/mikolajcieszczyk */}
+              </a>
+            </span>
+          </Grid.Column>
+        </Grid.Row>
+      </Grid>
+    </Container>
+  )
 }
