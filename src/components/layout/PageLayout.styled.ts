@@ -95,7 +95,7 @@ export const LogoWrapper = styled(Link)`
 export const LogOutWrapper = styled.div`
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  /* justify-content: flex-end; */
 
   p {
     text-transform: capitalize;

@@ -1,363 +1,340 @@
-import { SubmitButton, ResetButton } from 'formik-semantic-ui-react'
 import React, { useEffect, useState } from 'react'
-import {
-  Modal,
-  Header,
-  Button,
-  Icon,
-  Form,
-  FormGroup,
-  Dimmer,
-  Loader,
-  Confirm,
-} from 'semantic-ui-react'
-import axios from '../../../api/axios'
-import { IClientsData } from './Clients'
-import { Formik } from 'formik'
+import { ErrorMessage, Field, Form, Formik } from 'formik'
 import * as Yup from 'yup'
-import { skillsOptions } from './AddClient'
+import axios from '../../../api/axios'
+import { ToastContainer, toast } from 'react-toastify'
+import { Navigate } from 'react-router-dom'
+import { useRoutes } from 'react-router-dom'
+import { Button, Modal } from 'react-bootstrap'
+import { Icon } from 'semantic-ui-react'
+import { Link, useLocation } from 'react-router-dom'
+import NtrpFaq from '../../NtrpFaq'
+
+export const skillsOptions = [
+  { key: '1', text: 'NTRP 1.0', value: 'NTRP 1.0' },
+  { key: '2', text: 'NTRP 1.5', value: 'NTRP 1.5' },
+  { key: '3', text: 'NTRP 2.0', value: 'NTRP 2.0' },
+  { key: '4', text: 'NTRP 2.5', value: 'NTRP 2.5' },
+  { key: '5', text: 'NTRP 3.0', value: 'NTRP 3.0' },
+  { key: '6', text: 'NTRP 3.5', value: 'NTRP 3.5' },
+  { key: '7', text: 'NTRP 4.0', value: 'NTRP 4.0' },
+  { key: '8', text: 'NTRP 4.5', value: 'NTRP 4.5' },
+  { key: '9', text: 'NTRP 5.0', value: 'NTRP 5.0' },
+  { key: '10', text: 'NTRP 5.5', value: 'NTRP 5.5' },
+  { key: '11', text: 'NTRP 6.0', value: 'NTRP 6.0' },
+  { key: '12', text: 'NTRP 6.5', value: 'NTRP 6.5' },
+  { key: '13', text: 'NTRP 7.0', value: 'NTRP 7.0' },
+]
+
+export const genderOptions = [
+  { key: '1', text: 'Male', value: 'Male' },
+  { key: '2', text: 'Female', value: 'Female' },
+  { key: '3', text: 'Other', value: 'Other' },
+]
+
+export interface IClient {
+  name: string
+  surname: string
+  age: number | string
+  email: string
+  phone: string
+  skills: string
+  gender: string
+}
 
 interface IProps {
   id: string
 }
 
-interface RegisterData {
-  name: string | undefined
-  surname: string | undefined
-  age: number | undefined
-  email: string | undefined
-  phone: number | undefined
-  skills: string | undefined
-  gender: string | undefined
-}
+// Create the markup
+const EditClient = ({ id }: IProps): JSX.Element => {
+  const [show, setShow] = useState(false)
+  const [client, setClient] = useState({} as IClient)
 
-export default function EditClient({ id }: IProps) {
-  const [open, setOpen] = React.useState<boolean>(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [clientData, setClientData] = useState<IClientsData>({} as IClientsData)
-  const [openQuitConfirm, setOpenQuitConfirm] = useState(false)
-  const [isSaveConfirmed, setIsSaveConfirmed] = useState<boolean>(false)
+  const handleClose = () => setShow(false)
 
-  const requestData = async () => {
-    setOpen(true)
+  const handleShow = () => setShow(true)
+  const notifySuccess = (msg: string) =>
+    toast.success(msg, {
+      position: 'bottom-right',
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: 'light',
+    })
 
-    try {
-      const request = await axios.get(`http://localhost:4000/clients/${id}`)
+  const notifyError = (msg: string) =>
+    toast.error(msg, {
+      position: 'bottom-right',
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: 'colored',
+    })
 
-      // console.log(Object.values(request.data).length)
-
-      if (Object.values(request.data).length !== 0) {
-        setTimeout(() => {
-          setClientData(request.data)
-          setIsLoading(false)
-        }, 1000)
-      }
-    } catch (error) {
-      console.log(error)
-    }
+  const initialData: IClient = {
+    name: '',
+    surname: '',
+    age: 0,
+    email: '',
+    phone: '',
+    gender: '',
+    skills: '',
   }
 
-  const initialFormValue: RegisterData = {
-    name: clientData?.name,
-    surname: clientData?.surname,
-    age: clientData?.age,
-    email: clientData?.email,
-    phone: clientData?.phone,
-    gender: clientData?.gender,
-    skills: clientData?.skills,
-  }
+  const phoneRegExp =
+    /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/
 
-  const validationScheme = Yup.object().shape({
-    name: Yup.string().max(20, 'Must be 20 characters or less').required(),
-    surname: Yup.string().max(30, 'Must be 30 characters or less').required(),
-    age: Yup.number().min(1, 'Minimum one digit required').required(),
-    email: Yup.string().email('Invalid email address').required(),
+  const AddClientSchema = Yup.object().shape({
+    name: Yup.string()
+      .max(20, 'Must be 20 characters or less')
+      .required('Name is required'),
+
+    surname: Yup.string()
+      .max(30, 'Must be 30 characters or less')
+      .required('Surname is required'),
+    age: Yup.number().required(),
+    email: Yup.string()
+      .email('Invalid email address')
+      .required('E-mail is equired'),
     phone: Yup.string()
-      .matches(/^[+]*[(]?[0-9]{1,4}[)]?[-\s./0-9]*$/i, 'invalid phone')
-      .min(8, 'Must be at least 8 digits')
-      .max(15, 'Must be 15 digits or less')
-      .required(),
+      .matches(phoneRegExp, 'Phone number is not valid')
+      .required('Phone number is required'),
+
     gender: Yup.string().oneOf(['Male', 'Female', 'Other']).required(),
     skills: Yup.string().required(),
   })
 
-  const onSubmit = async (values: RegisterData) => {
-    console.log(values)
-
+  const onSubmit = async (values: IClient) => {
     try {
-      const editClient = await axios.patch(`http://localhost:4000/clients/update/${id}`, values)
-      // console.log(editClient)
-      console.log('Data saved')
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  const handleDeleteClient = async () => {
-    try {
-      const clientToDelete = await axios.delete(
-        `http://localhost:4000/clients/remove/${parseInt(id)}`,
+      const request = await axios.patch(
+        `http://localhost:4000/clients/update/${id}`,
+        values,
       )
+      console.log(request.status)
 
-      console.log(clientToDelete)
+      request.status === 200 && notifySuccess('Client updated succesfully!')
+      handleClose()
     } catch (error) {
+      notifyError('Something went wrong')
       console.log(error)
     }
   }
 
-  const genderOptions = [
-    {
-      id: 'male',
-      key: 'M',
-      text: 'Male',
-      value: 'Male',
-    },
-    {
-      id: 'female',
-      key: 'F',
-      text: 'Female',
-      value: 'Female',
-    },
-    {
-      id: 'other',
-      key: 'O',
-      text: 'Other',
-      value: 'Other',
-    },
-  ]
-
-  const handleConfirm = () => {
-    setOpenQuitConfirm(true)
-  }
-
-  const handleCancelConfirm = () => {
-    setOpen(true)
-    setOpenQuitConfirm(false)
-  }
-
-  const handleApproveConfirm = () => {
-    setOpen(false)
-    setOpenQuitConfirm(false)
+  const requestData = async () => {
+    try {
+      const response = await axios.get(`/clients/${id}`)
+      // console.log(response?.data)
+      setClient(response.data)
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   return (
-    <Modal
-      onOpen={() => requestData()}
-      open={open}
-      trigger={
-        <Button>
-          <Icon name='edit' /> Edit
-        </Button>
-      }
-      size='large'
-    >
-      <Modal.Content>
-        <Modal.Description>
-          {isLoading ? (
-            <Dimmer active>
-              <Loader indeterminate>Preparing Data</Loader>
-            </Dimmer>
-          ) : (
-            <>
-              <Header>
-                {clientData?.name} {clientData?.surname}
-              </Header>
-
+    <>
+      <Button variant='primary' onClick={handleShow}>
+        <i className='bi bi-pencil-fill'></i>
+      </Button>
+      <Modal show={show} onHide={handleClose} onShow={requestData}>
+        <div className='container'>
+          <div className='row'>
+            <div className='col-lg-12'>
               <Formik
-                initialValues={initialFormValue}
-                validationSchema={validationScheme}
-                onSubmit={onSubmit}
+                initialValues={client}
+                enableReinitialize
+                validationSchema={AddClientSchema}
+                onSubmit={(values) => onSubmit(values)}
               >
-                {({
-                  values,
-                  errors,
-                  touched,
-                  handleChange,
-                  handleBlur,
-                  handleSubmit,
-                  isSubmitting,
-                  handleReset,
-                  setFieldValue,
-                }) => (
-                  <Form size='large' onSubmit={handleSubmit}>
-                    <Form.Group widths={3}>
-                      <Form.Input
-                        id='input-name'
-                        errorPrompt
-                        errorConfig={{
-                          prompt: false,
-                          basic: false,
-                          color: 'green',
-                          pointing: 'below',
-                        }}
-                        name='name'
-                        label='Name'
-                        onChange={handleChange}
-                        value={values.name}
-                        onBlur={handleBlur}
-                        defaultValue={clientData?.name}
-                      />
-                      {touched.name && errors.name ? (
-                        <div className='error-message'>{errors.name}</div>
-                      ) : null}
-                      <Form.Input
-                        id='input-surname'
-                        errorPrompt
-                        errorConfig={{
-                          prompt: false,
-                          basic: true,
-                          color: 'blue',
-                        }}
-                        name='surname'
-                        label='Surname'
-                        value={values.surname}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                      />
-                      {touched.surname && errors.surname ? (
-                        <div className='error-message'>{errors.surname}</div>
-                      ) : null}
-                      <Form.Input
-                        id='input-age'
-                        errorPrompt
-                        errorConfig={{
-                          prompt: false,
-                          basic: true,
-                          color: 'blue',
-                        }}
-                        name='age'
-                        label='Age'
-                        type='number'
-                        defaultValue={values.age}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        // error={{
-                        //   content: 'Please enter a valid email address',
-                        //   pointing: 'below',
-                        // }}
-                      />
-                      {touched.age && errors.age ? (
-                        <div className='error-message'>{errors.age}</div>
-                      ) : null}
-                    </Form.Group>
-                    <Form.Group widths={2}>
-                      <Form.Input
-                        id='input-email'
-                        errorPrompt
-                        name='email'
-                        label='Email'
-                        value={values.email}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                      />
-                      {touched.email && errors.email ? (
-                        <div className='error-message'>{errors.email}</div>
-                      ) : null}
-                      <Form.Input
-                        id='input-phone'
-                        errorPrompt
-                        name='phone'
-                        label='Phone'
-                        value={values.phone}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                      />
-                      {touched.phone && errors.phone ? (
-                        <div className='error-message'>{errors.phone}</div>
-                      ) : null}
-                    </Form.Group>
-                    <Form.Group widths={2}>
-                      <Form.Select
-                        id='gender'
-                        name='gender'
-                        defaultValue={clientData?.gender}
-                        label='Gender'
-                        placeholder='Select gender'
-                        fluid
-                        selection
-                        scrolling
-                        options={genderOptions}
-                        onChange={(_, { value }) => setFieldValue('gender', value)}
-                        onBlur={handleBlur}
-                      />
-                      {touched.gender && errors.gender ? (
-                        <div className='error-message'>{errors.gender}</div>
-                      ) : null}
-                      <Form.Select
-                        id='skills'
-                        name='skills'
-                        defaultValue={clientData?.skills}
-                        label='NTRP'
-                        placeholder="Select Client's NTRP"
-                        fluid
-                        selection
-                        scrolling
-                        options={skillsOptions}
-                        onChange={(_, { value }) => setFieldValue('skills', value)}
-                        onBlur={handleBlur}
-                        // error={{
-                        //   content: 'Please enter a valid email address',
-                        //   pointing: 'below',
-                        // }}
-                      />
-                      {touched.skills && errors.skills ? (
-                        <div className='error-message'>{errors.skills}</div>
-                      ) : null}
-                    </Form.Group>
+                {({ touched, errors, isSubmitting, values }) => (
+                  <div>
+                    <div className='row mb-5'>
+                      <div className='col-lg-12 text-center'>
+                        <h1 className='mt-5'>Edit client</h1>
+                      </div>
+                    </div>
+                    <Form>
+                      <Modal.Body>
+                        <div className='form-group'>
+                          <label className='mt-3 ' htmlFor='name'>
+                            Name
+                          </label>
+                          <Field
+                            type='name'
+                            name='name'
+                            placeholder='Enter name'
+                            autocomplete='off'
+                            className={` form-control
+                          ${touched.name && errors.name ? 'is-invalid' : ''}`}
+                          />
 
-                    <FormGroup>
-                      <ResetButton
-                        color='blue'
-                        fluid
-                        width={8}
-                        onClick={handleReset}
-                        labelPosition='left'
-                        icon='save'
-                        // onClick={() => handleConfirmPopup('reset')}
-                      >
-                        <Icon name='redo' /> Reset
-                      </ResetButton>
+                          <ErrorMessage
+                            component='div'
+                            name='name'
+                            className='invalid-feedback'
+                          />
 
-                      <SubmitButton
-                        color='green'
-                        fluid
-                        width={8}
-                        labelPosition='left'
-                        icon='save'
-                        // onClick={() => handleConfirmPopup('save')}
-                        disabled={Object.values(errors).length ? true : false}
-                      >
-                        <Icon name='save' /> Save changes
-                      </SubmitButton>
-                    </FormGroup>
-                  </Form>
+                          <label className='mt-3 ' htmlFor='surname'>
+                            Surname
+                          </label>
+                          <Field
+                            type='surname'
+                            name='surname'
+                            placeholder='Enter surname'
+                            autocomplete='off'
+                            className={` form-control
+                          ${
+                            touched.surname && errors.surname
+                              ? 'is-invalid'
+                              : ''
+                          }`}
+                          />
+
+                          <ErrorMessage
+                            component='div'
+                            name='surname'
+                            className='invalid-feedback'
+                          />
+
+                          <label className='mt-3 ' htmlFor='number'>
+                            age
+                          </label>
+                          <Field
+                            type='number'
+                            name='age'
+                            placeholder='Enter age'
+                            autocomplete='off'
+                            className={` form-control
+                          ${touched.age && errors.age ? 'is-invalid' : ''}`}
+                          />
+
+                          <ErrorMessage
+                            component='div'
+                            name='age'
+                            className='invalid-feedback'
+                          />
+
+                          <label className='mt-3 ' htmlFor='email'>
+                            Email
+                          </label>
+                          <Field
+                            type='email'
+                            name='email'
+                            placeholder='Enter email'
+                            autocomplete='off'
+                            className={` form-control
+                          ${touched.email && errors.email ? 'is-invalid' : ''}`}
+                          />
+
+                          <ErrorMessage
+                            component='div'
+                            name='email'
+                            className='invalid-feedback'
+                          />
+
+                          <label className='mt-3 ' htmlFor='phone'>
+                            Phone
+                          </label>
+                          <Field
+                            type='phone'
+                            name='phone'
+                            placeholder='Enter phone'
+                            autocomplete='off'
+                            className={` form-control
+                          ${touched.phone && errors.phone ? 'is-invalid' : ''}`}
+                          />
+
+                          <ErrorMessage
+                            component='div'
+                            name='phone'
+                            className='invalid-feedback'
+                          />
+
+                          <label className='mt-3 ' htmlFor='gender'>
+                            Gender
+                          </label>
+                          <Field
+                            as='select'
+                            type='gender'
+                            name='gender'
+                            placeholder='Enter gender'
+                            autocomplete='off'
+                            className={` form-control
+                          ${
+                            touched.gender && errors.gender ? 'is-invalid' : ''
+                          }`}
+                          >
+                            {genderOptions.map((item) => {
+                              return (
+                                <option value={item.value}>{item.value}</option>
+                              )
+                            })}
+                          </Field>
+
+                          <ErrorMessage
+                            component='div'
+                            name='gender'
+                            className='invalid-feedback'
+                          />
+
+                          <label className='mt-3 ' htmlFor='skills'>
+                            Skills
+                          </label>
+                          <Field
+                            as='select'
+                            type='skills'
+                            name='skills'
+                            placeholder='Enter skills'
+                            autocomplete='off'
+                            className={` form-control
+                          ${
+                            touched.skills && errors.skills ? 'is-invalid' : ''
+                          }`}
+                          >
+                            {skillsOptions.map((item) => {
+                              return (
+                                <option value={item.value}>{item.value}</option>
+                              )
+                            })}
+                          </Field>
+                          <NtrpFaq />
+
+                          <ErrorMessage
+                            component='div'
+                            name='skills'
+                            className='invalid-feedback'
+                          />
+                        </div>
+                      </Modal.Body>
+
+                      <Modal.Footer>
+                        <Button variant='secondary' onClick={handleClose}>
+                          Close
+                        </Button>
+                        <Button
+                          type='submit'
+                          variant='primary'
+                          onClick={() => onSubmit}
+                        >
+                          Save Changes
+                        </Button>
+                      </Modal.Footer>
+                    </Form>
+                  </div>
                 )}
               </Formik>
-              <Button
-                content='Delete Client'
-                labelPosition='left'
-                icon='delete'
-                negative
-                onClick={() => handleDeleteClient()}
-              />
-              <Confirm
-                open={openQuitConfirm}
-                onCancel={() => handleCancelConfirm()}
-                onConfirm={() => handleApproveConfirm()}
-                content='Are you sure you want to quit?'
-              />
-            </>
-          )}
-        </Modal.Description>
-      </Modal.Content>
-      <Modal.Actions>
-        <Button
-          content='Close'
-          labelPosition='left'
-          icon='checkmark'
-          onClick={() => handleConfirm()}
-        />
-      </Modal.Actions>
-    </Modal>
+            </div>
+          </div>
+        </div>
+      </Modal>
+    </>
   )
 }
+
+export default EditClient

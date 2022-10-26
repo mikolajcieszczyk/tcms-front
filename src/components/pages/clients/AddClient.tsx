@@ -1,34 +1,14 @@
-import { Formik } from 'formik'
+import React, { useEffect, useState } from 'react'
+import { ErrorMessage, Field, Form, Formik } from 'formik'
 import * as Yup from 'yup'
-import { FormikHelpers } from 'formik/dist/types'
-import { FormField, FormGroup } from 'semantic-ui-react'
-import {
-  Checkbox,
-  Form,
-  Input,
-  Radio,
-  ResetButton,
-  Select,
-  SubmitButton,
-} from 'formik-semantic-ui-react'
-import { StyledForm, StyledInput } from './AddClient.styled'
 import axios from '../../../api/axios'
-
-interface RegisterData {
-  name: string
-  surname: string
-  age: number
-  email: string
-  phone: string
-  skills: string
-  gender: string
-}
-
-interface Props<Values> {
-  onSubmit?: (values: Values, formikHelpers: FormikHelpers<Values>) => void | Promise<any>
-  isSubmitting?: boolean
-}
-
+import { ToastContainer, toast } from 'react-toastify'
+import { Navigate } from 'react-router-dom'
+import { useRoutes } from 'react-router-dom'
+import { Button, Modal } from 'react-bootstrap'
+import { Icon } from 'semantic-ui-react'
+import { request } from 'https'
+import NtrpFaq from '../../NtrpFaq'
 export const skillsOptions = [
   { key: '1', text: 'NTRP 1.0', value: 'NTRP 1.0' },
   { key: '2', text: 'NTRP 1.5', value: 'NTRP 1.5' },
@@ -45,8 +25,60 @@ export const skillsOptions = [
   { key: '13', text: 'NTRP 7.0', value: 'NTRP 7.0' },
 ]
 
-const AddClient = (props: Props<RegisterData>) => {
-  const initialFormValue: RegisterData = {
+export const genderOptions = [
+  { key: '1', text: 'Male', value: 'Male' },
+  { key: '2', text: 'Female', value: 'Female' },
+  { key: '3', text: 'Other', value: 'Other' },
+]
+
+export interface IClient {
+  name: string
+  surname: string
+  age: number | string
+  email: string
+  phone: string
+  skills: string
+  gender: string
+}
+
+interface IProps {
+  onClose: any
+}
+
+// Create the markup
+const AddClient = (): JSX.Element => {
+  const [show, setShow] = useState(false)
+
+  const handleClose = () => {
+    setShow(false)
+  }
+  const handleShow = () => setShow(true)
+
+  const notifySuccess = (msg: string) =>
+    toast.success(msg, {
+      position: 'bottom-right',
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: 'light',
+    })
+
+  const notifyError = (msg: string) =>
+    toast.error(msg, {
+      position: 'bottom-right',
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: 'colored',
+    })
+
+  const initialData: IClient = {
     name: '',
     surname: '',
     age: 0,
@@ -56,128 +88,230 @@ const AddClient = (props: Props<RegisterData>) => {
     skills: '',
   }
 
-  const validationScheme = Yup.object({
-    name: Yup.string().max(20, 'Must be 20 characters or less').required('Required'),
-    surname: Yup.string().max(30, 'Must be 30 characters or less').required('Required'),
+  const phoneRegExp =
+    /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/
+
+  const AddClientSchema = Yup.object().shape({
+    name: Yup.string()
+      .max(20, 'Must be 20 characters or less')
+      .required('Name is required'),
+
+    surname: Yup.string()
+      .max(30, 'Must be 30 characters or less')
+      .required('Surname is required'),
     age: Yup.number().required(),
-    email: Yup.string().email('Invalid email address').required('Required'),
+    email: Yup.string()
+      .email('Invalid email address')
+      .required('E-mail is equired'),
     phone: Yup.string()
-      .matches(/^[+]*[(]?[0-9]{1,4}[)]?[-\s./0-9]*$/i, 'invalid phone')
-      .min(8, 'Must be at least 8 digits')
-      .max(15, 'Must be 15 digits or less')
-      .required('Required'),
+      .matches(phoneRegExp, 'Phone number is not valid')
+      .required('Phone number is required'),
 
     gender: Yup.string().oneOf(['Male', 'Female', 'Other']).required(),
     skills: Yup.string().required(),
   })
 
-  const onSubmit = async (values: RegisterData) => {
+  const onSubmit = async (values: IClient) => {
     console.log(values)
 
     try {
-      const addNewClient = await axios.post('/clients/add', values)
-      console.log(addNewClient)
+      const request = await axios.post(
+        'http://localhost:4000/clients/add',
+        values,
+      )
+
+      if (request.status === 201) {
+        notifySuccess('Client added succesfully!')
+        handleClose()
+      }
     } catch (error) {
+      notifyError('Something went wrong')
       console.log(error)
     }
   }
 
   return (
-    <div>
-      <Formik
-        initialValues={initialFormValue}
-        validationSchema={validationScheme}
-        onSubmit={onSubmit}
-      >
-        <StyledForm size='large' inverted>
-          <StyledInput
-            id='input-name'
-            errorPrompt
-            errorConfig={{
-              prompt: false,
-              basic: false,
-              color: 'green',
-              pointing: 'below',
-            }}
-            name='name'
-            label='Name'
-            placeholder='Name'
-          />
-          <StyledInput
-            id='input-surname'
-            errorPrompt
-            errorConfig={{
-              prompt: false,
-              basic: true,
-              color: 'blue',
-            }}
-            name='surname'
-            label='Surname'
-            placeholder='Surname'
-          />
-          <StyledInput
-            id='input-age'
-            errorPrompt
-            errorConfig={{
-              prompt: false,
-              basic: true,
-              color: 'blue',
-            }}
-            name='age'
-            label='Age'
-            placeholder='Age'
-            type='number'
-          />
-          <StyledInput
-            id='input-email'
-            errorPrompt
-            name='email'
-            label='Email'
-            placeholder='Email'
-          />
-          <StyledInput
-            id='input-phone'
-            errorPrompt
-            name='phone'
-            label='Phone'
-            placeholder='Phone'
-          />
+    <>
+      <Button onClick={handleShow} variant='success'>
+        <Icon name='add' />
+        Add new client
+      </Button>
+      <Modal show={show} onHide={handleClose}>
+        <div className='container'>
+          <div className='row'>
+            <div className='col-lg-12'>
+              <Formik
+                initialValues={initialData}
+                validationSchema={AddClientSchema}
+                onSubmit={(values) => onSubmit(values)}
+              >
+                {({ touched, errors, isSubmitting, values }) => (
+                  <div>
+                    <div className='row mb-5'>
+                      <div className='col-lg-12 text-center'>
+                        <h1 className='mt-5'>Add client</h1>
+                      </div>
+                    </div>
+                    <Form>
+                      <Modal.Body>
+                        <div className='form-group'>
+                          <label htmlFor='name'>Name</label>
+                          <Field
+                            type='name'
+                            name='name'
+                            placeholder='Enter name'
+                            className={`mt-2 form-control
+                          ${touched.name && errors.name ? 'is-invalid' : ''}`}
+                          />
 
-          <FormField>
-            <label>Gender</label>
-            <FormGroup inline>
-              <Radio id='radio-gender-male' name='gender' label='Male' value='Male' />
-              <Radio id='radio-gender-female' name='gender' label='Female' value='Female' />
-              <Radio
-                id='radio-gender-other'
-                errorPrompt
-                name='gender'
-                label='Other'
-                value='Other'
-              />
-            </FormGroup>
-          </FormField>
-          <Select
-            id='select-skills'
-            label='NTRP'
-            errorPrompt
-            name='skills'
-            selectOnBlur={false}
-            clearable
-            placeholder="Select Client's NTRP"
-            options={skillsOptions}
-          />
-          <FormGroup unstackable>
-            <SubmitButton primary fluid width={8}>
-              Submit
-            </SubmitButton>
-            <ResetButton color='green' fluid width={8}>
-              Reset
-            </ResetButton>
-          </FormGroup>
-        </StyledForm>
-      </Formik>
-    </div>
+                          <ErrorMessage
+                            component='div'
+                            name='name'
+                            className='invalid-feedback'
+                          />
+
+                          <label htmlFor='surname'>Surname</label>
+                          <Field
+                            type='surname'
+                            name='surname'
+                            placeholder='Enter surname'
+                            className={`mt-2 form-control
+                          ${
+                            touched.surname && errors.surname
+                              ? 'is-invalid'
+                              : ''
+                          }`}
+                          />
+
+                          <ErrorMessage
+                            component='div'
+                            name='surname'
+                            className='invalid-feedback'
+                          />
+
+                          <label htmlFor='number'>age</label>
+                          <Field
+                            type='number'
+                            name='age'
+                            placeholder='Enter age'
+                            autocomplete='off'
+                            className={`mt-2 form-control
+                          ${touched.age && errors.age ? 'is-invalid' : ''}`}
+                          />
+
+                          <ErrorMessage
+                            component='div'
+                            name='age'
+                            className='invalid-feedback'
+                          />
+
+                          <label htmlFor='email'>Email</label>
+                          <Field
+                            type='email'
+                            name='email'
+                            placeholder='Enter email'
+                            autocomplete='off'
+                            className={`mt-2 form-control
+                          ${touched.email && errors.email ? 'is-invalid' : ''}`}
+                          />
+
+                          <ErrorMessage
+                            component='div'
+                            name='email'
+                            className='invalid-feedback'
+                          />
+
+                          <label htmlFor='phone'>Phone</label>
+                          <Field
+                            type='phone'
+                            name='phone'
+                            placeholder='Enter phone'
+                            autocomplete='off'
+                            className={`mt-2 form-control
+                          ${touched.phone && errors.phone ? 'is-invalid' : ''}`}
+                          />
+
+                          <ErrorMessage
+                            component='div'
+                            name='phone'
+                            className='invalid-feedback'
+                          />
+
+                          <label htmlFor='gender'>Gender</label>
+                          <Field
+                            as='select'
+                            type='gender'
+                            name='gender'
+                            placeholder='Enter gender'
+                            autocomplete='off'
+                            className={`mt-2 form-control
+                          ${
+                            touched.gender && errors.gender ? 'is-invalid' : ''
+                          }`}
+                          >
+                            {genderOptions.map((item) => {
+                              return (
+                                <option value={item.value}>{item.value}</option>
+                              )
+                            })}
+                          </Field>
+
+                          <ErrorMessage
+                            component='div'
+                            name='gender'
+                            className='invalid-feedback'
+                          />
+
+                          <label htmlFor='skills'>Skills</label>
+                          <Field
+                            as='select'
+                            type='skills'
+                            name='skills'
+                            placeholder='Enter skills'
+                            autocomplete='off'
+                            className={`mt-2 form-control
+                          ${
+                            touched.skills && errors.skills ? 'is-invalid' : ''
+                          }`}
+                          >
+                            {skillsOptions.map((item) => {
+                              return (
+                                <option value={item.value}>{item.value}</option>
+                              )
+                            })}
+                          </Field>
+
+                          <ErrorMessage
+                            component='div'
+                            name='skills'
+                            className='invalid-feedback'
+                          />
+                          <NtrpFaq />
+                        </div>
+                      </Modal.Body>
+
+                      <Modal.Footer>
+                        <Button variant='secondary' onClick={handleClose}>
+                          Close
+                        </Button>
+                        <Button
+                          type='submit'
+                          variant='primary'
+                          onClick={() => onSubmit}
+                        >
+                          Save Changes
+                        </Button>
+                      </Modal.Footer>
+                    </Form>
+                  </div>
+                )}
+              </Formik>
+            </div>
+          </div>
+          <div></div>
+        </div>
+      </Modal>
+    </>
   )
 }
 

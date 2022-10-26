@@ -1,25 +1,5 @@
 import styled from 'styled-components'
-import { Menu } from 'semantic-ui-react'
-
-export const StyledMenu = styled(Menu)`
-  div {
-    background-color: #fff !important;
-    /* font-size: 16px !important; */
-  }
-`
-
-export const MenuHeader = styled(Menu.Header)`
-  display: flex;
-  justify-content: space-between;
-  font-size: 16px !important;
-`
-export const NavContainer = styled.div`
-  width: 300px;
-  height: 100%;
-  padding: 20px;
-  text-align: center;
-  color: #fff;
-`
+import { Menu } from '@blueprintjs/core'
 
 export const LogoWrapper = styled.div`
   display: flex;
@@ -40,23 +20,7 @@ export const MenuContainer = styled.nav`
   display: flex;
   flex-direction: column;
 `
-export const MenuItem = styled(Menu.Item)<{ isActive: boolean }>`
+
+export const BluePrintMenu = styled(Menu)`
   display: flex !important;
-  i {
-    font-size: 15px;
-    color: ${(props) =>
-      props.isActive ? '#1657FF !important' : '#B9C0DE !important'};
-  }
-
-  span {
-    font-weight: 400;
-    font-size: 15px;
-    line-height: 18px;
-
-    margin-left: 11px;
-
-    letter-spacing: 1px;
-    color: ${(props) =>
-      props.isActive ? '#1657FF !important' : '#B9C0DE !important'};
-  }
 `

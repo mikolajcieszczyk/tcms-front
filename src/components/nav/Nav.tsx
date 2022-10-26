@@ -3,88 +3,49 @@ import { Link, useLocation } from 'react-router-dom'
 
 import TennisBall from '../../assets/img/green-ball.png'
 
-import { Container, Icon, Menu } from 'semantic-ui-react'
-import {
-  NavContainer,
-  LogoWrapper,
-  MenuContainer,
-  MenuItem,
-} from './Nav.styled'
+import { Container } from 'semantic-ui-react'
 
 import useAuth from '../../hooks/useAuth'
-
+import { BluePrintMenu } from './Nav.styled'
+import { Button, ButtonGroup, Navbar } from 'react-bootstrap'
+import Nav from 'react-bootstrap/Nav'
 interface INav {
   path?: string
+  logo: any
+  logout: any
 }
 
-export default function Nav({ path }: INav) {
-  const [activeItem, setActiveItem] = useState('')
+export default function Navi({ path, logo, logout }: INav) {
+  const [active, setActive] = useState('home')
   const location = useLocation()
   const { auth, setAuth } = useAuth()
 
   return (
-    <Container>
-      <Menu secondary>
-        <Link to='/dashboard'>
-          <MenuItem
-            name='main'
-            active={activeItem === 'main'}
-            onClick={() => setActiveItem('main')}
-            isActive={location.pathname === '/dashboard'}
+    <Navbar bg='white' variant='light'>
+      <Container fluid className='px-3'>
+        <Navbar.Brand href='#home'>{logo}</Navbar.Brand>
+        <Nav className='me-auto'>
+          <Nav.Link
+            className={`${active === 'home' && 'font-weight-bold'}`}
+            onClick={() => setActive('home')}
           >
-            <Icon name='globe' fitted />
-            <span>Main</span>
-          </MenuItem>
-        </Link>
-
-        <Link to='bookings'>
-          <MenuItem
-            name='Bookings'
-            active={activeItem === 'Bookings'}
-            onClick={() => setActiveItem('Bookings')}
-            isActive={location.pathname === '/dashboard/bookings'}
+            <Link to='/dashboard'>Home</Link>
+          </Nav.Link>
+          <Nav.Link
+            className={`${active === 'bookings' && 'font-weight-bold'}`}
+            onClick={() => setActive('bookings')}
           >
-            <Icon name='calendar alternate outline' fitted />
-            <span>Bookings</span>
-          </MenuItem>
-        </Link>
-
-        <Link to='clients'>
-          <MenuItem
-            name='clients'
-            active={activeItem === 'clients'}
-            onClick={() => setActiveItem('clients')}
-            isActive={location.pathname === '/dashboard/clients'}
+            <Link to='/dashboard/bookings'>Bookings</Link>
+          </Nav.Link>
+          <Nav.Link
+            className={`${active === 'clients' && 'font-weight-bold'}`}
+            onClick={() => setActive('clients')}
           >
-            <Icon name='users' fitted />
-            <span>Clients</span>
-          </MenuItem>
-        </Link>
-      </Menu>
-    </Container>
-    // <NavContainer>
-    //   <LogoWrapper>
-    //     <Link
-    //       to='/dashboard'
-    //       style={{
-    //         display: 'flex',
-    //         flexDirection: 'column',
-    //         alignItems: 'center',
-    //       }}
-    //     >
-    //       <div style={{ display: 'flex', alignItems: 'center' }}>
-    //         <img src={TennisBall} alt='TennisBall' width='30px' />
-    //         <span>TCMS</span>
-    //       </div>
-    //       <p style={{ color: '#2C2745' }}>TENNIS CLUB MANAGEMENT SYSTEM</p>
-    //     </Link>
-    //   </LogoWrapper>
-    //   <MenuContainer>
-    //     <Menu inverted icon='labeled' vertical>
-
-    //
-    //     </Menu>
-    //   </MenuContainer>
-    // </NavContainer>
+            <Link to='/dashboard/clients'>Clients</Link>
+          </Nav.Link>
+        </Nav>
+        <Nav>{logout}</Nav>
+      </Container>
+    </Navbar>
   )
 }
