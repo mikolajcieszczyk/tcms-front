@@ -9,6 +9,7 @@ import Main from './components/pages/main/Main'
 import Stats from './components/pages/stats/Stats'
 import RequireAuth from './components/auth/RequireAuth'
 import './css/globals.css'
+import './css/scheduler.css'
 import { ToastContainer } from 'react-toastify'
 
 function App(): any {

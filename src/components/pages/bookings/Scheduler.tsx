@@ -21,6 +21,7 @@ import moment from 'moment'
 import EditBooking from './EditBooking'
 import AddBooking from './AddBooking'
 import { toast } from 'react-toastify'
+import { Badge, Button, OverlayTrigger, Tooltip } from 'react-bootstrap'
 const locales = {
   'en-US': enUS,
 }
@@ -236,9 +237,35 @@ export default function Scheduler() {
     requestData()
   }, [setEvents, openAddBooking, openEditBooking])
 
+  const CustomEvent = (event: any) => {
+    console.log(event)
+    return (
+      <span>
+        {' '}
+        <strong> event.title </strong>{' '}
+      </span>
+    )
+  }
+
+  const renderTooltip = (props: JSX.IntrinsicAttributes) => (
+    <Tooltip id='button-tooltip'>Simple tooltip</Tooltip>
+  )
+
+  const EventComponent = ({ event }: any) => (
+    <div className='custom-event-cell'>
+      <div className='d-flex justify-content-between'>
+        {event.title} [{event.price} PLN]{' '}
+        <Badge bg='warning text-dark'>Edit</Badge>
+      </div>
+    </div>
+  )
+
   return (
     <>
       <DnDCalendar
+        components={{
+          event: EventComponent,
+        }}
         style={{ height: '700px' }}
         events={events}
         localizer={localizer}

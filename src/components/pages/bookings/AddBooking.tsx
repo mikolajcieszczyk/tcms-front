@@ -79,7 +79,6 @@ export default function AddBooking(props: any) {
       )
 
       request.status === 201 && notifySuccess('Booking added succesfully!')
-      console.log(request)
       props.close()
     } catch (error: any) {
       notifyError(error.response.data.message)
