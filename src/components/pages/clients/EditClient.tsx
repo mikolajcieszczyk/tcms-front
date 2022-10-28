@@ -55,21 +55,21 @@ const EditClient = ({ id }: IProps): JSX.Element => {
 
   const handleShow = () => setShow(true)
   const notifySuccess = (msg: string) =>
-    toast.success(msg, {
+    toast.info(msg, {
       position: 'bottom-right',
-      autoClose: 5000,
+      autoClose: 2000,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,
       draggable: true,
       progress: undefined,
-      theme: 'light',
+      theme: 'colored',
     })
 
   const notifyError = (msg: string) =>
     toast.error(msg, {
       position: 'bottom-right',
-      autoClose: 5000,
+      autoClose: 2000,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,

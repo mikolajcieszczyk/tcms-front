@@ -19,6 +19,7 @@
     "blueprint-form": "^1.9.1",
     "bootstrap": "^5.2.2",
     "bootstrap-icons": "^1.9.1",
+    "date-fns": "^2.29.3",
     "email-validator": "^2.0.4",
     "formik": "^2.2.9",
     "formik-semantic-ui-react": "^2.0.0",

@@ -12,15 +12,12 @@ export default function DeleteClient({ data }: IProps) {
   const [show, setShow] = useState(false)
 
   const handleClose = () => setShow(false)
-  const handleShow = () => {
-    console.log(data)
-    setShow(true)
-  }
+  const handleShow = () => setShow(true)
 
   const customId = 'custom-id-yes'
 
   const notifySuccess = (msg: string) =>
-    toast.success(msg, {
+    toast.info(msg, {
       position: 'bottom-right',
       autoClose: 2000,
       hideProgressBar: false,
@@ -47,7 +44,6 @@ export default function DeleteClient({ data }: IProps) {
 
   const onSubmit = async () => {
     try {
-      console.log(data)
       const request = await axios.delete(
         `http://localhost:4000/clients/remove/${data.id}`,
       )
@@ -56,7 +52,6 @@ export default function DeleteClient({ data }: IProps) {
       handleClose()
     } catch (error) {
       notifyError('Something went wrong')
-      console.log(error)
     }
   }
 

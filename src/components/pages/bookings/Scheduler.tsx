@@ -1,209 +1,40 @@
-import React, {
-  Fragment,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react'
-import PropTypes from 'prop-types'
+import { ComponentType, useCallback, useEffect, useState } from 'react'
 import {
   Calendar,
-  Views,
-  DateLocalizer,
-  momentLocalizer,
+  CalendarProps,
+  dateFnsLocalizer,
   FormatInput,
   SlotInfo,
+  Views,
 } from 'react-big-calendar'
+import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop'
+import format from 'date-fns/format'
+import parse from 'date-fns/parse'
+import startOfWeek from 'date-fns/startOfWeek'
+import getDay from 'date-fns/getDay'
+import enUS from 'date-fns/locale/en-US'
+import addHours from 'date-fns/addHours'
+import startOfHour from 'date-fns/startOfHour'
+
 import axios from '../../../api/axios'
 import moment from 'moment'
-import BookingInfo from './BookingInfo'
-import { Popup, Header } from 'semantic-ui-react'
-import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop'
-
-const DnDCalendar = withDragAndDrop(Calendar)
-
-const localizer = momentLocalizer(moment)
-
+import EditBooking from './EditBooking'
+import AddBooking from './AddBooking'
+import { toast } from 'react-toastify'
+const locales = {
+  'en-US': enUS,
+}
+const endOfHour = (date: Date): Date => addHours(startOfHour(date), 1)
 const now = new Date()
-
-const testEvents = [
-  {
-    id: 0,
-    title: 'All Day Event very long title',
-    allDay: true,
-    start: new Date(2015, 3, 0),
-    end: new Date(2015, 3, 1),
-  },
-  {
-    id: 1,
-    title: 'Long Event',
-    start: new Date(2015, 3, 7),
-    end: new Date(2015, 3, 10),
-  },
-
-  {
-    id: 2,
-    title: 'DTS STARTS',
-    start: new Date(2016, 2, 13, 0, 0, 0),
-    end: new Date(2016, 2, 20, 0, 0, 0),
-  },
-
-  {
-    id: 3,
-    title: 'DTS ENDS',
-    start: new Date(2016, 10, 6, 0, 0, 0),
-    end: new Date(2016, 10, 13, 0, 0, 0),
-  },
-
-  {
-    id: 4,
-    title: 'Some Event',
-    start: new Date(2015, 3, 9, 0, 0, 0),
-    end: new Date(2015, 3, 10, 0, 0, 0),
-  },
-  {
-    id: 5,
-    title: 'Conference',
-    start: new Date(2015, 3, 11),
-    end: new Date(2015, 3, 13),
-    desc: 'Big conference for important people',
-  },
-  {
-    id: 6,
-    title: 'Meeting',
-    start: new Date(2015, 3, 12, 10, 30, 0, 0),
-    end: new Date(2015, 3, 12, 12, 30, 0, 0),
-    desc: 'Pre-meeting meeting, to prepare for the meeting',
-  },
-  {
-    id: 7,
-    title: 'Lunch',
-    start: new Date(2015, 3, 12, 12, 0, 0, 0),
-    end: new Date(2015, 3, 12, 13, 0, 0, 0),
-    desc: 'Power lunch',
-  },
-  {
-    id: 8,
-    title: 'Meeting',
-    start: new Date(2015, 3, 12, 14, 0, 0, 0),
-    end: new Date(2015, 3, 12, 15, 0, 0, 0),
-  },
-  {
-    id: 9,
-    title: 'Happy Hour',
-    start: new Date(2015, 3, 12, 17, 0, 0, 0),
-    end: new Date(2015, 3, 12, 17, 30, 0, 0),
-    desc: 'Most important meal of the day',
-  },
-  {
-    id: 10,
-    title: 'Dinner',
-    start: new Date(2015, 3, 12, 20, 0, 0, 0),
-    end: new Date(2015, 3, 12, 21, 0, 0, 0),
-  },
-  {
-    id: 11,
-    title: 'Planning Meeting with Paige',
-    start: new Date(2015, 3, 13, 8, 0, 0),
-    end: new Date(2015, 3, 13, 10, 30, 0),
-  },
-  {
-    id: 11.1,
-    title: 'Inconvenient Conference Call',
-    start: new Date(2015, 3, 13, 9, 30, 0),
-    end: new Date(2015, 3, 13, 12, 0, 0),
-  },
-  {
-    id: 11.2,
-    title: "Project Kickoff - Lou's Shoes",
-    start: new Date(2015, 3, 13, 11, 30, 0),
-    end: new Date(2015, 3, 13, 14, 0, 0),
-  },
-  {
-    id: 11.3,
-    title: 'Quote Follow-up - Tea by Tina',
-    start: new Date(2015, 3, 13, 15, 30, 0),
-    end: new Date(2015, 3, 13, 16, 0, 0),
-  },
-  {
-    id: 12,
-    title: 'Late Night Event',
-    start: new Date(2015, 3, 17, 19, 30, 0),
-    end: new Date(2015, 3, 18, 2, 0, 0),
-  },
-  {
-    id: 12.5,
-    title: 'Late Same Night Event',
-    start: new Date(2015, 3, 17, 19, 30, 0),
-    end: new Date(2015, 3, 17, 23, 30, 0),
-  },
-  {
-    id: 13,
-    title: 'Multi-day Event',
-    start: new Date(2015, 3, 20, 19, 30, 0),
-    end: new Date(2015, 3, 22, 2, 0, 0),
-  },
-  {
-    id: 14,
-    title: 'Today',
-    start: new Date(new Date().setHours(new Date().getHours() - 3)),
-    end: new Date(new Date().setHours(new Date().getHours() + 3)),
-  },
-  {
-    id: 15,
-    title: 'Point in Time Event',
-    start: now,
-    end: now,
-  },
-  {
-    id: 16,
-    title: 'Video Record',
-    start: new Date(2015, 3, 14, 15, 30, 0),
-    end: new Date(2015, 3, 14, 19, 0, 0),
-  },
-  {
-    id: 17,
-    title: 'Dutch Song Producing',
-    start: new Date(2015, 3, 14, 16, 30, 0),
-    end: new Date(2015, 3, 14, 20, 0, 0),
-  },
-  {
-    id: 18,
-    title: 'Itaewon Halloween Meeting',
-    start: new Date(2015, 3, 14, 16, 30, 0),
-    end: new Date(2015, 3, 14, 17, 30, 0),
-  },
-  {
-    id: 19,
-    title: 'Online Coding Test',
-    start: new Date(2015, 3, 14, 17, 30, 0),
-    end: new Date(2015, 3, 14, 20, 30, 0),
-  },
-  {
-    id: 20,
-    title: 'An overlapped Event',
-    start: new Date(2015, 3, 14, 17, 0, 0),
-    end: new Date(2015, 3, 14, 18, 30, 0),
-  },
-  {
-    id: 21,
-    title: 'Phone Interview',
-    start: new Date(2015, 3, 14, 17, 0, 0),
-    end: new Date(2015, 3, 14, 18, 30, 0),
-  },
-  {
-    id: 22,
-    title: 'Cooking Class',
-    start: new Date(2015, 3, 14, 17, 30, 0),
-    end: new Date(2015, 3, 14, 19, 0, 0),
-  },
-  {
-    id: 23,
-    title: 'Go to the gym',
-    start: new Date(2015, 3, 14, 18, 30, 0),
-    end: new Date(2015, 3, 14, 20, 0, 0),
-  },
-]
+const start = endOfHour(now)
+const end = addHours(start, 2)
+const localizer = dateFnsLocalizer({
+  format,
+  parse,
+  startOfWeek,
+  getDay,
+  locales,
+})
 
 interface IBooking {
   id: number
@@ -214,6 +45,15 @@ interface IBooking {
   price: any
 }
 
+interface IResource {
+  resourceId: number
+  resourceTitle: string
+}
+
+const DnDCalendar = withDragAndDrop<IBooking, IResource>(
+  Calendar as ComponentType<CalendarProps<IBooking, IResource>>,
+)
+
 const resourceMap = [
   { resourceId: 1, resourceTitle: 'Court 1' },
   { resourceId: 2, resourceTitle: 'Court 2' },
@@ -223,10 +63,43 @@ const resourceMap = [
 
 export default function Scheduler() {
   const [events, setEvents] = useState<any[]>([])
-  const [openBookingInfo, setOpenBookingInfo] = useState<boolean>(false)
-  const [selectedBooking, setSelectedBooking] = useState<IBooking>(
-    {} as IBooking,
-  )
+  const [openEditBooking, setOpenEditBooking] = useState<boolean>(false)
+  const [bookingToEditId, setBookingToEditId] = useState<number>()
+  const [openAddBooking, setOpenAddBooking] = useState<boolean>(false)
+  const [newBookingData, setNewBookingData] = useState({} as IBooking)
+
+  const notifySuccess = (msg: string) =>
+    toast.info(msg, {
+      position: 'bottom-right',
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: 'colored',
+    })
+
+  const notifyError = (msg: string) =>
+    toast.error(msg, {
+      position: 'bottom-right',
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: 'colored',
+    })
+
+  const formats = {
+    eventTimeRangeFormat: (range: { start: FormatInput; end: FormatInput }) =>
+      `${localizer.format(range.start, 'HH:mm')} – ${localizer.format(
+        range.end,
+        'HH:mm',
+      )}`,
+    timeGutterFormat: 'HH:mm',
+  }
 
   const almostUniqueId = () => {
     return Math.floor(Date.now() + Math.random())
@@ -251,53 +124,25 @@ export default function Scheduler() {
       }
 
       responseData()
-
       setEvents(responseData())
-    } catch (error) {
-      console.log(error)
+    } catch (error: any) {
+      notifyError(error.response.data.message)
     }
   }
 
-  useEffect(() => {
-    requestData()
-    console.log(events)
-  }, [])
-
   const handleSelectSlot = useCallback(
     ({ start, end, resourceId }: SlotInfo) => {
-      const title = window.prompt('client name')
-      const price = window.prompt('price')
-
-      const addBooking = async () => {
-        if (title && price) {
-          let newEvent = {} as IBooking
-
-          try {
-            newEvent.id = newEvent.id
-            newEvent.clientName = title
-            newEvent.start = start
-            newEvent.end = end
-            newEvent.court = resourceId
-            newEvent.price = parseInt(price, 10)
-
-            const request = await axios.post(
-              `http://localhost:4000/bookings/add`,
-              newEvent,
-            )
-
-            console.log(request)
-          } catch (error) {
-            console.log(error)
-          }
-
-          setEvents((prev) => [
-            ...prev,
-            { almostUniqueId, start, end, title, resourceId },
-          ])
-        }
+      const bookingData: IBooking = {
+        id: almostUniqueId(),
+        clientName: '',
+        start: start,
+        end: end,
+        court: resourceId,
+        price: 0,
       }
 
-      addBooking()
+      setOpenAddBooking(!openAddBooking)
+      setNewBookingData(bookingData)
     },
     [setEvents],
   )
@@ -311,90 +156,127 @@ export default function Scheduler() {
       id: number
       resourceId: number
     }) => {
-      const selectedEvent = {
-        clientName: event.title,
-        start: event.start,
-        end: event.end,
-        id: event.id,
-        court: event.resourceId,
-        price: event.price,
-      }
-
-      // console.log(selectedEvent)
-      // console.log(selectedEvent.id)
-
-      const findEventToRemove = events.find(
-        (item) => item.id === selectedEvent.id,
-      )
-      console.log(findEventToRemove)
-
-      // console.log(events)
-
-      const removeBooking = async () => {
-        try {
-          const request = await axios.delete(
-            `http://localhost:4000/bookings/remove/id${findEventToRemove.id}`,
-          )
-          console.log(request)
-        } catch (error) {
-          console.log(error)
-        }
-      }
-
-      if (findEventToRemove) {
-        removeBooking()
-        requestData()
-      } else {
-        console.log('czekaj')
-      }
+      setBookingToEditId(event.id)
+      setOpenEditBooking(true)
     },
     [],
   )
 
-  const formats = {
-    eventTimeRangeFormat: (range: { start: FormatInput; end: FormatInput }) =>
-      `${localizer.format(range.start, 'HH:mm')} – ${localizer.format(
-        range.end,
-        'HH:mm',
-      )}`,
-    timeGutterFormat: 'HH:mm',
-  }
+  const resizeEvent = useCallback(
+    //@ts-ignore
+    ({ event, start, end }) => {
+      setEvents((prev) => {
+        const existing = prev.find((ev) => ev.id === event.id) ?? {}
+        const filtered = prev.filter((ev) => ev.id !== event.id)
+
+        const updateBooking = async () => {
+          const dataToUpdate = {
+            start,
+            end,
+          }
+
+          try {
+            const request = await axios.patch(
+              `http://localhost:4000/bookings/update/${event.id}`,
+              dataToUpdate,
+            )
+            request.status === 200 &&
+              notifySuccess('Booking resized succesfully!')
+          } catch (error: any) {
+            notifyError(error.response.data.message)
+          }
+        }
+
+        updateBooking()
+
+        return [...filtered, { ...existing, start, end }]
+      })
+    },
+    [setEvents],
+  )
+
+  const moveEvent = useCallback(
+    //@ts-ignore
+    ({ event, start, end, resourceId }) => {
+      setEvents((prev) => {
+        const existing = prev.find((ev) => ev.id === event.id) ?? {}
+        const filtered = prev.filter((ev) => ev.id !== event.id)
+
+        const updateBooking = async () => {
+          const dataToUpdate = {
+            start,
+            end,
+            court: resourceId,
+          }
+
+          try {
+            const request = await axios.patch(
+              `http://localhost:4000/bookings/update/${event.id}`,
+              dataToUpdate,
+            )
+
+            console.log(request)
+
+            request.status === 200 &&
+              notifySuccess('Booking moved succesfully!')
+          } catch (error: any) {
+            notifyError(error.response.data.message)
+          }
+        }
+
+        updateBooking()
+
+        return [...filtered, { ...existing, start, end, resourceId }]
+      })
+    },
+    [setEvents],
+  )
+
+  useEffect(() => {
+    requestData()
+  }, [setEvents, openAddBooking, openEditBooking])
 
   return (
     <>
-      <div>
-        <DnDCalendar
-          localizer={localizer}
-          events={testEvents}
-          draggableAccessor={(event) => true}
-          resources={resourceMap}
-          views={{
-            day: true,
-          }}
+      <DnDCalendar
+        style={{ height: '700px' }}
+        events={events}
+        localizer={localizer}
+        formats={formats}
+        culture='Poland'
+        defaultDate={moment().toDate()}
+        defaultView={Views.DAY}
+        //@ts-ignore
+        onEventDrop={moveEvent}
+        onEventResize={resizeEvent}
+        resourceIdAccessor='resourceId'
+        resources={resourceMap}
+        resourceTitleAccessor='resourceTitle'
+        step={30}
+        view='day'
+        onSelectSlot={handleSelectSlot}
+        //@ts-ignore
+        onSelectEvent={handleSelectEvent}
+        views={{
+          day: true,
+        }}
+        selectable
+        resizable
+      />
+      {openEditBooking && (
+        <EditBooking
+          isOpened={openEditBooking}
+          close={() => setOpenEditBooking(false)}
+          id={bookingToEditId}
         />
-        {/* <Calendar
-          formats={formats}
-          culture='Poland'
-          defaultDate={moment().toDate()}
-          defaultView={Views.DAY}
-          events={events}
-          localizer={localizer}
-          resourceIdAccessor='resourceId'
-          resources={resourceMap}
-          resourceTitleAccessor='resourceTitle'
-          step={30}
-          view='day'
-          onSelectSlot={handleSelectSlot}
-          onSelectEvent={handleSelectEvent}
-          views={{
-            day: true,
-          }}
-          selectable
-        /> */}
-      </div>
+      )}
+      {openAddBooking && (
+        <AddBooking
+          isOpened={openAddBooking}
+          close={() => setOpenAddBooking(false)}
+          data={newBookingData}
+        />
+      )}
     </>
   )
-}
-Scheduler.propTypes = {
-  localizer: PropTypes.instanceOf(DateLocalizer),
 }
